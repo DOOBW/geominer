@@ -1,4 +1,4 @@
-local node = 25 -- max = 1849
+local node = 9 -- max = 1849
 local h_min, h_max = 1.7, 51 -- минимальная плотность, максимальная плотность
 local computer = require('computer')
 local component = require('component')
@@ -9,7 +9,7 @@ local x, y, z, d = 0, 0, 0, nil -- S = 0, W = 1, N = 2, E = 3 [+x = E, -x = W, +
 local a_dr, x_dr, z_dr = 1, 0, 0 -- координаты для нод в спирали
 local x1, z1 = 0, 0 -- координаты для сканера
 local tWorld = {x = {}, y = {}, z = {}} -- координаты помеченных блоков
-local target, p, tTest, bedrock, x_f, y_f, z_f, gen, xS, yS, zS, D0, D1, ind = 0, 1
+local target, p, tTest, bedrock, x_f, y_f, z_f, gen, xS, yS, zS, D0, D1, ind, sb, cb = 0, 1
 local tWaste = {
   'cobblestone',
   'sandstone',
@@ -31,7 +31,7 @@ local tWaste = {
   'soul_sand'
 }
 -- навигация ---------
-local function compass() -- калибровка компаса
+local function compass() --\- калибровка компаса
   local tCmps = {{-1, 0}, {0, -1}, {1, 0}, [0] = {0, 1}}
   while not d do
     for c = 0, 3 do
@@ -47,13 +47,13 @@ local function compass() -- калибровка компаса
   end
 end
 
-local function delta(xD, yD, zD) -- принимает исходные координаты, возвращает индекс ближаейшего блока
+local function delta(xD, yD, zD) --\+ принимает исходные координаты, возвращает индекс ближаейшего блока
   xS, yS, zS, D0, D1, ind = 0, 0, 0, math.huge, math.huge, 0
   for bl = 1, #tWorld.x do
     xS, yS, zS = tWorld.x[bl], tWorld.y[bl], tWorld.z[bl]
-    if xS < xD then xS = xD - xS elseif xS > xD then xS = xS - xD end
-    if yS < yD then yS = yD - yS elseif yS > yD then yS = yS - yD end
-    if zS < zD then zS = zD - zS elseif zS > zD then zS = zS - zD end
+    if xS < xD then xS = xD - xS else xS = xS - xD end
+    if yS < yD then yS = yD - yS else yS = yS - yD end
+    if zS < zD then zS = zD - zS else zS = zS - zD end
     D0 = xS + yS + zS
     if D0 < D1 then
       D1 = D0
@@ -70,8 +70,18 @@ local tMove = {
   [0] = function() z, z1 = z + 1, z1 + 1 end
 }
 
-local function move(side) -- 0, 1, 3
-  while robot.swing(side) do
+local function move(side) --\- 0, 1, 3
+  robot.swing(0)
+  sb, cb = robot.swing(side)
+  if not sb and cb == 'block' then
+    tWorld.x, tWorld.y, tWorld.z = {}, {}, {}
+    home()
+    print('АШИПКА: ПЦ!')
+    chunkloader(false)
+    os.exit()
+  else
+    while robot.swing(side) do
+    end
   end
   if robot.move(side) then
     if side == 0 then
@@ -94,7 +104,7 @@ local function move(side) -- 0, 1, 3
   end
 end
 
-local function turn(cc) -- поворотник
+local function turn(cc) --\- поворотник
   if not cc then
     cc = false
   end
@@ -107,7 +117,7 @@ local function turn(cc) -- поворотник
   end
 end
 
-local function spiral(node_t) -- поиск координат указанной ноды в спирали
+local function spiral(node_t) --\- поиск координат указанной ноды в спирали
   a_dr, x_dr, z_dr = 1, 0, 0
   while true do
     for i = 1, a_dr do
@@ -136,21 +146,19 @@ local function spiral(node_t) -- поиск координат указанно�
   end
 end
 -- движение ----------
-local function sturn(dT) -- вспомогательная фция
+local function sturn(dT) --\- вспомогательная фция
   while d ~= dT do
     turn((dT - d) % 4 == 1)
   end
 end
 
-local function gotot(xt, yt, zt) -- великий ход конем
+local function gotot(xt, yt, zt) --\- великий ход конем
   -- Y
-  if y ~= yt then
-    while y ~= yt do
-      if y < yt then
-        move(1)
-      elseif y > yt then
-        move(0)
-      end
+  while y ~= yt do
+    if y < yt then
+      move(1)
+    elseif y > yt then
+      move(0)
     end
   end
   -- X
@@ -173,7 +181,7 @@ local function gotot(xt, yt, zt) -- великий ход конем
   end
 end
 -- управление копалкой
-local function scan(sy) -- сканер квадрата 7x7
+local function scan(sy) --\+ сканер квадрата 7x7
   -- необходимо указывать на какой высоте сканировать, относительно робота
   tTest = geolyzer.scan(-3-x1, -3-z1, sy, 7, 7, 1)
   p = 1
@@ -189,13 +197,14 @@ local function scan(sy) -- сканер квадрата 7x7
       elseif tTest[p] < 0 then
         tWorld.x, tWorld.y, tWorld.z = {}, {}, {}
         bedrock = y
+        return false
       end
       p = p + 1
     end
   end
 end
 
-local function fullness() -- получение коэффициента заполненности инвентаря
+local function fullness() --\- получение коэффициента заполненности инвентаря
   local item
   for slot = 1, robot.inventorySize() do
     if robot.count(slot) > 0 then
@@ -213,7 +222,7 @@ local function fullness() -- получение коэффициента зап�
   end
 end
 
-local function sorter() -- сортировщик инвентаря (после сброса мусора)
+local function sorter() --\- сортировщик инвентаря (после сброса мусора)
   local item, item1
   for slot = robot.inventorySize(), 1, -1 do
     for slot1 = 1, slot-1 do
@@ -229,7 +238,7 @@ local function sorter() -- сортировщик инвентаря (после
   end
 end
 
-local function packer() -- упаковщик предметов в блоки
+local function packer() --\- упаковщик предметов в блоки
   if component.isAvailable('crafting') then
     local tCrafting = {1, 2, 3, 5, 6, 7, 9, 10, 11}
     local tBlocks = {
@@ -274,7 +283,7 @@ local function packer() -- упаковщик предметов в блоки
   end
 end
 
-local function dropping(cont) -- сброс лута (true = бросать в контейнер)
+local function dropping(cont) --\- сброс лута (true = бросать в контейнер)
   local function isWaste(n) -- проверка, является ли предмет мусором
     for w = 1, #tWaste do
       if n == 'minecraft:'..tWaste[w] then
@@ -321,7 +330,7 @@ local function dropping(cont) -- сброс лута (true = бросать в �
   end
 end
 
-local function charger() -- зарядка инструмента
+local function charger() --\- зарядка инструмента
   local status = 0
   for side = 0, 3 do
     if i_c.getInventorySize(3) and i_c.getInventorySize(3) == 1 then
@@ -342,7 +351,7 @@ local function charger() -- зарядка инструмента
   end
 end
 
-local function home() -- возвращение на хомку
+local function home() --\- возвращение на хомку
   gotot(0, -1, 0)
   move(1)
   packer()
@@ -350,7 +359,7 @@ local function home() -- возвращение на хомку
   charger()
 end
 
-local function miner() -- осноная функция копалки
+local function miner() --\- осноная функция копалки
   if #tWorld.x ~= 0 then
     while #tWorld.x ~= 0 do
       target = delta(x, y, z)
@@ -363,34 +372,31 @@ local function miner() -- осноная функция копалки
   end
 end
 
-local function recovery() -- прыжог домой для зарядки/сброса лута и обратно
+local function recovery() --\- прыжог домой для зарядки/сброса лута и обратно
   x_f, y_f, z_f = x, y, z
   home()
   move(0)
   gotot(x_f, y_f, z_f)
 end
 
-local function chunkloader(set) -- вкл/выкл чанклоадера, если есть
+local function chunkloader(set) --\- вкл/выкл чанклоадера, если есть
   if component.isAvailable('chunkloader') then
     component.chunkloader.setActive(set)
   end
 end
+-- main
+chunkloader(true)
+local test_time = computer.uptime()
+move(0)
+compass()
 
-local function MM()
+for n = 1, node-1 do
   scan(0)
   miner()
   while not bedrock do
     scan(-1)
     miner()
   end
-end
-
-chunkloader(true)
-local test_time = computer.uptime()
-move(0)
-compass()
-MM()
-for n = 1, node-1 do
   if fullness() > 0.95 then
     dropping()
     packer()
@@ -424,8 +430,8 @@ for n = 1, node-1 do
   gotot(x_dr*7, math.abs(bedrock)+y-1, z_dr*7)
   x1, z1 = 0, 0
   bedrock = nil
-  MM()
 end
+
 local min, sec = math.modf((computer.uptime()-test_time)/60)
 print('Время работы: '.. min ..' мин. '.. math.ceil(sec*60) ..' сек.')
 home()
