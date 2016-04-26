@@ -30,6 +30,13 @@ local tWaste = {
   'netherrack',
   'soul_sand'
 }
+
+local function report(msg)
+  print(msg)
+  if component.isAvailable('tunnel') then
+    component.tunnel.send(msg)
+  end
+end
 -- навигация ---------
 local function compass() -- калибровка компаса
   local tCmps = {{-1, 0}, {0, -1}, {1, 0}, [0] = {0, 1}}
@@ -75,7 +82,7 @@ local function move(side) -- 0, 1, 3
   if not sb and cb == 'block' then
     tWorld.x, tWorld.y, tWorld.z = {}, {}, {}
     move(1)
-    print('АШИПКА: ПЦ!')
+    report('АШИПКА: ПЦ!')
   else
     while robot.swing(side) do
     end
@@ -201,6 +208,21 @@ local function scan(sy) -- сканер квадрата 7x7
   end
 end
 
+local function border() -- определение координат бедрока
+  local test = 0
+  for br = -1, 2 do
+    for stp = -8, 1, 7 do
+      tTest = geolyzer.scan(stp, stp, br, 8, 8, 1)
+      for v = 1, #tTest do
+        if tTest[v] < -0.3 then
+          test = br
+        end
+      end
+    end
+  end
+  return test + y + 1
+end
+
 local function fullness() -- получение коэффициента заполненности инвентаря
   local item
   for slot = 1, robot.inventorySize() do
@@ -297,7 +319,7 @@ local function dropping(cont) -- сброс лута (true = бросать в �
         else
           if cont then
             if not robot.drop(3) then
-              print('АШИПКА: МЕСТОВ НЕТ')
+              report('АШИПКА: МЕСТОВ НЕТ')
               while not robot.drop(3) do
                 os.sleep(10)
               end
@@ -318,7 +340,7 @@ local function dropping(cont) -- сброс лута (true = бросать в �
       turn()
     end
     if not s_cont then -- если нет контейнера - начинаем об этом спамить
-      print('АШИПКА: СУНДУЧОК, ПЛИЗ')
+      report('АШИПКА: СУНДУЧОК, ПЛИЗ')
       os.sleep(30)
       dropping(true)
     end
@@ -381,30 +403,8 @@ local function chunkloader(set) -- вкл/выкл чанклоадера, ес�
     component.chunkloader.setActive(set)
   end
 end
--- main
-local tArgs = {...}
-if tArgs[1] then
-  node = tonumber(tArgs[1])
-end
-if tArgs[2] then
-  height = tonumber(tArgs[2])
-end
 
-chunkloader(true)
-local test_time = computer.uptime()
-move(0)
-compass()
-
-for n = 1, node do
-  scan(0)
-  miner()
-  while not bedrock do
-    scan(-1)
-    miner()
-    if y == -heihgt then
-      bedrock = y
-    end
-  end
+local function state() -- проверка соостояния, восстановление, при необходимости
   if fullness() > 0.95 then
     dropping()
     packer()
@@ -434,6 +434,32 @@ for n = 1, node do
       recovery()
     end
   end
+end
+
+local tArgs = {...}
+if tArgs[1] then
+  node = tonumber(tArgs[1])
+end
+if tArgs[2] then
+  height = tonumber(tArgs[2])
+end
+
+chunkloader(true)
+local test_time = computer.uptime()
+move(0)
+compass()
+
+for n = 1, node do
+  scan(0)
+  miner()
+  while not bedrock do
+    scan(-1)
+    miner()
+    if y == -heihgt then
+      bedrock = y
+    end
+  end
+  state()
   spiral(n)
   gotot(x_dr*7, math.abs(bedrock)+y-1, z_dr*7)
   x1, z1 = 0, 0
@@ -443,7 +469,4 @@ end
 home()
 chunkloader(false)
 local min, sec = math.modf((computer.uptime()-test_time)/60)
-print('Время работы: '.. min ..' мин. '.. math.ceil(sec*60) ..' сек.')
-if component.isAvailable('tunnel') then
-  component.tunnel.send('КОТОВО!')
-end
+report('Время работы: '.. min ..' мин. '.. math.ceil(sec*60) ..' сек.')
