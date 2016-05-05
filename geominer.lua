@@ -9,7 +9,7 @@ local x, y, z, d = 0, 0, 0, nil -- S = 0, W = 1, N = 2, E = 3 [+x = E, -x = W, +
 local a_dr, x_dr, z_dr = 1, 0, 0 -- координаты для нод в спирали
 local x1, z1 = 0, 0 -- координаты для сканера
 local tWorld = {x = {}, y = {}, z = {}} -- координаты помеченных блоков
-local target, p, height, tTest, bedrock, x_f, y_f, z_f, gen, xS, yS, zS, D0, D1, ind, sb, cb = 0, 1, 64
+local target, p, heihgt, tTest, bedrock, x_f, y_f, z_f, gen, xS, yS, zS, D0, D1, ind, sb, cb = 0, 1, 64
 local tWaste = {
   'cobblestone',
   'sandstone',
@@ -78,7 +78,6 @@ local tMove = {
 }
 
 local function move(side) -- 0, 1, 3
-  robot.swing(0)
   sb, cb = robot.swing(side)
   if not sb and cb == 'block' then
     tWorld.x, tWorld.y, tWorld.z = {}, {}, {}
@@ -451,24 +450,20 @@ move(0)
 compass()
 
 for n = 1, node do
+  scan(0)
+  miner()
   while not bedrock do
     scan(-1)
     miner()
-    state()
-    if y == height then
+    if y == -heihgt then
       bedrock = y
     end
   end
-  if n == 1 then
-    height = border()
-  end
   state()
-  if n ~= node then
-    spiral(n)
-    gotot(x_dr*7, math.abs(bedrock)+y-1, z_dr*7)
-    x1, z1 = 0, 0
-    bedrock = nil
-  end
+  spiral(n)
+  gotot(x_dr*7, math.abs(bedrock)+y-1, z_dr*7)
+  x1, z1 = 0, 0
+  bedrock = nil
 end
 
 home()
