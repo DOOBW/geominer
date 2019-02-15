@@ -1,0 +1,97 @@
+local component = require('component') -- подгрузить обертку из OpenOS
+local X, Y, Z, D = 0, 0, 0, 0
+local WORLD = {x = {}, y = {}, z = {}}
+
+local function add_component(name) -- получение прокси компонента
+  name = component.list(name)() -- получить адрес по имени
+  if name then -- если есть адрес
+    return component.proxy(name) -- вернуть прокси
+  end
+end
+
+local robot = add_component('robot') -- загрузка компонента
+
+local function step(side) -- функция движения на 1 блок
+  local state, type = robot.swing(side) -- тестовый свинг
+  if not state and type == 'block' then -- если блок нельзя разрушить
+    print('bedrock')
+    os.exit() -- временная заглушка
+  else
+    while robot.swing(side) do end -- копать пока возможно
+  end
+  if robot.move(side) then -- если робот сдвинулся, обновить координаты
+    if side == 0 then
+      Y = Y-1
+    elseif side == 1 then
+      Y = Y+1
+    elseif side == 3 then
+      if D == 0 then
+        Z = Z+1
+      elseif D == 1 then
+        X = X-1
+      elseif D == 2 then
+        Z = Z-1
+      else
+        X = X+1
+      end
+    end
+  end
+  if #WORLD.x ~= 0 then -- если таблица меток не пуста
+    for i = 1, #WORLD.x do -- пройти по всем позициям
+      if X == WORLD.x[i] and (Y-1 <= WORLD.y[i] and Y+1 >= WORLD.y[i]) and Z == WORLD.z[i] then
+        if WORLD.y[i] == Y+1 then -- добыть блок сверху, если есть
+          robot.swing(1)
+        elseif WORLD.y[i] == Y-1 then -- добыть блок снизу
+          robot.swing(0)
+        end
+        table.remove(WORLD.x, i) -- удалить метку из таблицы
+        table.remove(WORLD.y, i)
+        table.remove(WORLD.z, i)
+      end
+    end
+  end
+end
+
+
+local function turn(side) -- поворот в сторону
+  side = side or false
+  if robot.turn(side) then -- если робот повернулся, обновить переменную направления
+    if side then
+      D = (D+1)%4
+    else
+      D = (D-1)%4
+    end
+  end
+end
+
+local function smart_turn(side) -- поворот в определенную сторону света
+  while D ~= side do
+    turn((side-D)%4==1)
+  end
+end
+
+local function go(x, y, z) -- переход по указанным координатам
+  while Y ~= y do
+    if Y < y then
+      step(1)
+    elseif Y > y then
+      step(0)
+    end
+  end
+  if X < x then
+    smart_turn(3)
+  elseif X > x then
+    smart_turn(1)
+  end
+  while X ~= x do
+    step(3)
+  end
+  if Z < z then
+    smart_turn(0)
+  elseif Z > z then
+    smart_turn(2)
+  end
+  while Z ~= z do
+    step(3)
+  end
+end
