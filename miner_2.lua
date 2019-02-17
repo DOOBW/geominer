@@ -1,7 +1,9 @@
 local component = require('component') -- подгрузить обертку из OpenOS
+local computer = require('computer')
 local X, Y, Z, D = 0, 0, 0, 0 -- переменные локальной системы координат
 local WORLD = {x = {}, y = {}, z = {}}
 local border = false -- указатель статуса обнаружения бедрока
+local E_C, W_R = 0, 0 -- энергозатраты на один шаг и скорость износа
 
 local function add_component(name) -- получение прокси компонента
   name = component.list(name)() -- получить адрес по имени
@@ -132,4 +134,17 @@ local function compass() -- определение сторон света
       turn() -- задействовать простой поворот
     end
   end
+end
+
+local function calibration() -- калибровка при запуске
+  local energy = computer.energy() -- получить уровень энергии
+  step(0) -- сделать шаг
+  E_C = math.ceil(energy-computer.energy()) -- записать уровень потребления
+  energy = robot.durability() -- получить уровень износа/разряда инструмента
+  while energy == robot.durability() do -- пока не обнаружена разница
+    robot.place(1) -- установить блок
+    robot.swing(1) -- разрушить блок
+  end
+  W_R = energy-robot.durability() -- записать результат
+  step(1) -- вернуться на место
 end
