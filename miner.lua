@@ -1,5 +1,5 @@
-local component = require('component') -- подгрузить обертку из OpenOS
-local computer = require('computer')
+--local component = require('component') -- подгрузить обертку из OpenOS
+--local computer = require('computer')
 local chunks = 9 -- количество чанков для добычи
 local min, max = 2.2, 40 -- минимальная и максимальная плотность
 local port = 1 -- порт для взаимодействия с роботом
@@ -40,7 +40,14 @@ local tunnel = add_component('tunnel')
 local modem = add_component('modem')
 local robot = add_component('robot')
 local inventory = robot.inventorySize()
-local report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main
+local sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main
+
+sleep = function(timeout)
+  local deadline = computer.uptime()+timeout
+  while computer.uptime() >= deadline do
+    computer.pullSignal(deadline-computer.uptime())
+  end
+end
 
 report = function(message, stop) -- рапорт о состоянии
   message = '|'..X..' '..Y..' '..Z..'|\n'..message -- добавить к сообщению координаты
@@ -49,13 +56,13 @@ report = function(message, stop) -- рапорт о состоянии
   elseif tunnel then -- если есть связанная карта
     tunnel.send(message) -- послать сообщение через нее
   end
-  print(message)
+  --print(message)
   computer.beep('...........') -- пикнуть
   if stop then -- если есть флаг завершения
     if chunkloader then
       chunkloader.setActive(false)
     end
-    os.exit()--error(nil,0) -- остановить работу программы
+    error(nil,0) -- остановить работу программы
   end
 end
 
@@ -88,7 +95,7 @@ check = function(forcibly) -- проверка инструмента, бата�
         while not geolyzer.canSeeSky() do -- пока не видно неба
           step(1) -- сделать шаг вверх
         end
-        os.sleep(60)]]
+        sleep(60)]]
       end
     end
   end
@@ -399,7 +406,7 @@ home = function(forcibly) -- переход к начальной точке и 
     end
     if not size or size<26 then -- если контейнер не найден
       report('container not found') -- послать сообщение
-      os.sleep(30)
+      sleep(30)
     else
       break -- продолжить работу
     end
@@ -413,7 +420,7 @@ home = function(forcibly) -- переход к начальной точке и 
         if not a and b == 'inventory full' then -- если контейнер заполнен
           while not robot.drop(3) do -- ждать, пока не освободится
             report(b) -- послать сообщение
-            os.sleep(30) -- подождать
+            sleep(30) -- подождать
           end
         end
       end
@@ -479,7 +486,7 @@ home = function(forcibly) -- переход к начальной точке и 
           if robot.drop(3) then -- если получилось засунуть инструмент в зарядник
             local damage = controller.getStackInInternalSlot(1).damage
             while true do
-              os.sleep(30)
+              sleep(30)
               robot.suck(3)
               local n_damage = controller.getStackInInternalSlot(1).damage
               if damage > n_damage and n_damage ~= 0 then -- если инструмент починился
@@ -503,7 +510,7 @@ home = function(forcibly) -- переход к начальной точке и 
   else
     while computer.energy()/computer.maxEnergy() < 0.98 do -- ждать полного заряда батареи
       report('charging: '..math.floor((computer.energy()/computer.maxEnergy())*100)..'%')
-      os.sleep(30)
+      sleep(30)
     end
   end
   report('return to work')
