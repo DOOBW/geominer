@@ -62,7 +62,7 @@ report = function(message, stop) -- рапорт о состоянии
     if chunkloader then
       chunkloader.setActive(false)
     end
-    error(nil,0) -- остановить работу программы
+    error(message,0) -- остановить работу программы
   end
 end
 
