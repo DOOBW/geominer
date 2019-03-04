@@ -3,10 +3,9 @@
 <h1>Robot-miner with geolyzer</h1>
 </center>
 
-
 Program for a robot that allows you to mine ore without going down into the caves. Robot, using a geolyzer, can find and mine ore.
 
-https://www.youtube.com/watch?v=fXvMzKBADLc
+<iframe width="560" height="315" src="https://www.youtube.com/embed/fXvMzKBADLc" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <h2>Requirements:</h2>
 - Computer case (tier II or III)
@@ -37,4 +36,4 @@ https://www.youtube.com/watch?v=fXvMzKBADLc
 - Place the robot on a solid blocks platform.
 - Give the robot a pickaxe
 - Place a container and the charger near the robot.
-- Press the power button and enjoy a process.
+- Press the power button and enjoy a process.<br>
