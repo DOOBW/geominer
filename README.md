@@ -1,22 +1,37 @@
-И так, наконец-то возвращаюсь к роботу-копателю. Да будут новые баги и новые фичи!
+Program for a robot that allows you to mine ore without going down into the caves. Robot, using a geolyzer, can find and mine ore.
 
-Краткий план внедряемых фич:
+https://www.youtube.com/watch?v=fXvMzKBADLc
 
-Улучшенное сканирование руд.
-    Робот сканирует под собой квадрат 16x16 блоков, опускаясь блок за блоком.
-    При обнаружении бедрока запускается функция добычи.
-    При добыче робот поднимается и в цикле ищет ближайшие по горизонтали блоки руды, захватывая три слоя - Y+1, Y, Y-1
+Requirements:
 
-Определение энергопотребления сборки при запуске. На старте, робот запоминает количество потребленной энергии на один шаг + прочность инструмента. Это будет служить константой при проверке статуса, чтобы была возможность гарантированно вернуться на точку старта.
+Computer case (tier II or III)
+Inventory Upgrade (more the better)
+Inventory Controller Upgrade
+Hard Disk Drive
+EEPROM with Lua BIOS
+Geolyzer
+RAM (tier I or higher)
+CPU (any)
+Hover Upgrade (tier I)
+Diamond pickaxe or equivalent tool
+Optional:
 
-Умная упаковка добычи. Перед обработкой рассыпухи, теперь будет точнее анализироваться свободное место, упаковка не будет происходить механическим перебором, из-за которого бывали внезапные сбои.
+Crafting Upgrade
+Wireless Network Card
+Battery Upgrade
+Experience Upgrade
+Chunkloader Upgrade
+Generator Upgrade
+Enderchest from EnderStorage mod
 
-При наличии генератора, робот всегда будет с собой таскать уголь, при разгрузке на точке старта будет забирать стак угля или угольных блоков.
 
-Текущие константа энергопотребления и координаты будут записываться в EEPROM. Следовательно, при наличии сетевой/связанной карты, робота можно будет будить и не бояться выгрузки чанков, лагов, космических лучей.
+Installing:
 
-Скорее всего, добавлю функцию аварийного крафта кирок из булыги, в случае работы с ванильными инструментами.
-
-Планируется утилита, собирающая программу по параметрам, заданным пользователем. ...Или не планируется, скорее всего все возможности копалки не получится впихнуть на EEPROM, поэтому на EEPROM будет загрузчик с main функцией, а дополнительные модули придется записывать на жесткий диск.
-
-Планируется поддержка модов, например, возможность возить с собой и разворачивать заправочную станцию в виде генератора и зарядника. Или скидывать предметы в межпространственные сундуки. Тут надо будет смотреть, как будут развиваться моды.
+Download and save the file as init.lua
+wget https://raw.githubusercontent.com/DOOBW/geominer/master-v1.0/miner.lua init.lua
+Put this file in to root directory of the hard disc.
+Add the disk when crafting a robot.
+Place the robot on a solid blocks platform.
+Give the robot a pickaxe
+Place a container and the charger near the robot.
+Press the power button and enjoy a process.﻿
