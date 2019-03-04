@@ -44,9 +44,9 @@ local sleep, report, remove_point, check, step, turn, smart_turn, go, scan, cali
 
 sleep = function(timeout)
   local deadline = computer.uptime()+timeout
-  while computer.uptime() >= deadline do
+  repeat
     computer.pullSignal(deadline-computer.uptime())
-  end
+  until computer.uptime() >= deadline
 end
 
 report = function(message, stop) -- рапорт о состоянии
@@ -56,7 +56,6 @@ report = function(message, stop) -- рапорт о состоянии
   elseif tunnel then -- если есть связанная карта
     tunnel.send(message) -- послать сообщение через нее
   end
-  --print(message)
   computer.beep('...........') -- пикнуть
   if stop then -- если есть флаг завершения
     if chunkloader then
@@ -460,27 +459,26 @@ home = function(forcibly) -- переход к начальной точке и 
   if forcibly then
     report('tool search in container')
     if robot.durability() < 0.3 then -- если прочность инструмента меньше 30%
-      local container = controller.getAllStacks(3) -- получить информацию о всех предметах
-      if container then -- если контейнер никуда не ушел
-        robot.select(1) -- выбрать первый слот
-        controller.equip() -- поместить инструмент в инвентарь
-        local tool = controller.getStackInInternalSlot(1) -- получить данные инструмента
-        local size = container.count() -- получить размер инвентаря
-        local item = container.getAll() -- получить информацию о всех предметах
-        for slot = 1, size do -- просканировать массив
-          if item[slot].name == tool.name and item[slot].damage < tool.damage then
-            robot.drop(3) -- выбросить старый инструмент
-            controller.suckFromSlot(3, slot) -- взять новый
+      robot.select(1) -- выбрать первый слот
+      controller.equip() -- поместить инструмент в инвентарь
+      local tool = controller.getStackInInternalSlot(1) -- получить данные инструмента
+      for slot = 1, size do
+        local item = controller.getStackInSlot(3, slot)
+        if item then
+          if item.name == tool.name and item.damage < tool.damage then
+            robot.drop(3)
+            controller.suckFromSlot(3, slot)
+            break
           end
         end
-        controller.equip() -- экипировать
-      end    
+      end
+      controller.equip() -- экипировать
     end
     report('attempt to repair tool')
     if robot.durability() < 0.3 then -- если инструмент не заменился на лучший
       for side = 1, 3 do -- перебрать все стороны
         local name = controller.getInventoryName(3) -- получить имя инвенторя
-        if name == 'opencomputers:charger' then -- сравнить имя
+        if name == 'opencomputers:charger' or name == 'tile.oc.charger' then -- сравнить имя
           robot.select(1) -- выбрать слот
           controller.equip() -- достать инструмент
           if robot.drop(3) then -- если получилось засунуть инструмент в зарядник
@@ -502,6 +500,10 @@ home = function(forcibly) -- переход к начальной точке и 
         else
           turn() -- повернуться
         end
+      end
+      while robot.durability() < 0.3 do
+        report('need a new tool')
+        sleep(30)
       end
     end
   end
@@ -555,6 +557,7 @@ main = function()
 end
 
 calibration() -- запустить калибровку
+
 calibration = nil -- освободить память от функции калибровки
 local Tau = computer.uptime() -- записать текущее время
 local pos = {0, 0, 0, [0] = 1} -- таблица для хранения координат чанков
