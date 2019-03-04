@@ -5,7 +5,7 @@
 
 Program for a robot that allows you to mine ore without going down into the caves. Robot, using a geolyzer, can find and mine ore.
 
-https://www.youtube.com/watch?v=fXvMzKBADLc
+<iframe width="519" height="240" src="https://www.youtube.com/embed/fXvMzKBADLc" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 <h2>Requirements:</h2>
 - Computer case (tier II or III)
