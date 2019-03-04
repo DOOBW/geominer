@@ -557,7 +557,6 @@ main = function()
 end
 
 calibration() -- запустить калибровку
-
 calibration = nil -- освободить память от функции калибровки
 local Tau = computer.uptime() -- записать текущее время
 local pos = {0, 0, 0, [0] = 1} -- таблица для хранения координат чанков
