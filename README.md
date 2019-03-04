@@ -25,7 +25,6 @@ https://www.youtube.com/watch?v=fXvMzKBADLc
 - Generator Upgrade
 - Enderchest from EnderStorage mod
 
-
 <h3>Installing:</h3>
 - Download and save the file as init.lua
 - wget https://raw.githubusercontent.com/DOOBW/geominer/master-v1.0/miner.lua init.lua
