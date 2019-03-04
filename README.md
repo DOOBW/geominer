@@ -1,4 +1,8 @@
-<center><img src="https://i.imgur.com/lVIijDy.png" /></center>
+<a name="start">
+<center><img src="https://i.imgur.com/lVIijDy.png" />
+<h1>Robot-miner with geolyzer</h1>
+</center>
+
 
 Program for a robot that allows you to mine ore without going down into the caves. Robot, using a geolyzer, can find and mine ore.
 
