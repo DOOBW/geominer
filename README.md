@@ -4,7 +4,7 @@ Program for a robot that allows you to mine ore without going down into the cave
 
 https://www.youtube.com/watch?v=fXvMzKBADLc
 
-<h1>Requirements:</h1>
+<h2>Requirements:</h2>
 - Computer case (tier II or III)
 - Inventory Upgrade (more the better)
 - Inventory Controller Upgrade
@@ -34,4 +34,4 @@ https://www.youtube.com/watch?v=fXvMzKBADLc
 - Place the robot on a solid blocks platform.
 - Give the robot a pickaxe
 - Place a container and the charger near the robot.
-- Press the power button and enjoy a process.﻿
+- Press the power button and enjoy a process.
