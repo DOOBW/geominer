@@ -36,4 +36,4 @@ https://www.youtube.com/watch?v=fXvMzKBADLc
 - Place the robot on a solid blocks platform.
 - Give the robot a pickaxe
 - Place a container and the charger near the robot.
-- Press the power button and enjoy a process.
+- Press the power button and enjoy a process.<br>
