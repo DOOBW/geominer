@@ -8,16 +8,16 @@ Program for a robot that allows you to mine ore without going down into the cave
 https://www.youtube.com/embed/fXvMzKBADLc
 
 <h2>Requirements:</h2>
-* Computer case (tier II or III)  
-* Inventory Upgrade (more the better)  
-* Inventory Controller Upgrade  
-* Hard Disk Drive  
-* EEPROM with Lua BIOS  
-* Geolyzer  
-* RAM (tier I or higher)  
-* CPU (any)  
-* Hover Upgrade (tier I)  
-* Diamond pickaxe or equivalent tool  
+* Computer case (tier II or III)   
+* Inventory Upgrade (more the better)   
+* Inventory Controller Upgrade   
+* Hard Disk Drive   
+* EEPROM with Lua BIOS   
+* Geolyzer   
+* RAM (tier I or higher)   
+* CPU (any)   
+* Hover Upgrade (tier I)   
+* Diamond pickaxe or equivalent tool   
 
 <h2>Optional:</h2>
 * Crafting Upgrade  
