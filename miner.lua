@@ -482,16 +482,21 @@ home = function(forcibly) -- переход к начальной точке и 
           robot.select(1) -- выбрать слот
           controller.equip() -- достать инструмент
           if robot.drop(3) then -- если получилось засунуть инструмент в зарядник
-            local damage = controller.getStackInInternalSlot(1).damage
+            local charge = controller.getStackInSlot(3, 1).charge
+            local max_charge = controller.getStackInSlot(3, 1).maxCharge
             while true do
               sleep(30)
-              robot.suck(3)
-              local n_damage = controller.getStackInInternalSlot(1).damage
-              if damage > n_damage and n_damage ~= 0 then -- если инструмент починился
-                controller.equip() -- экипировать
-                break -- остановить зарядку
-              elseif damage == n_damage then -- если инструмент не чинится
-                report('tool could not be repaired', true) -- остановить работу
+              local n_charge = controller.getStackInSlot(3, 1).charge -- получить заряд
+              if charge then
+                if n_charge == max_charge then
+                  robot.suck(3) -- забрать предмет
+                  controller.equip() -- экипировать
+                  break -- остановить зарядку
+                else
+                  report('tool is '..math.floor((n_charge+1)/max_charge*100)..'% charged')
+                end
+              else -- если инструмент не чинится
+                report('tool could not be charged', true) -- остановить работу
               end
             end
           else
