@@ -51,7 +51,7 @@ Program for a robot that allows you to mine ore without going down into the cave
 
 * Download and save the file as init.lua
 
-* wget https://raw.githubusercontent.com/DOOBW/geominer/master-v1.0/miner.lua init.lua
+* wget https://raw.githubusercontent.com/DOOBW/geominer/master/miner.lua init.lua
 
 * Put this file in to root directory of the hard disc.
 
