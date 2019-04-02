@@ -88,7 +88,11 @@ check = function(forcibly) -- проверка инструмента, бата�
       if generator and generator.count() == 0 and not forcibly then -- если есть генератор
         for slot = 1, inventory do -- обойти инвентарь
           robot.select(slot) -- выбрать слот
-          generator.insert() -- попробовать заправиться
+          for gen in component.list('generator') do -- перебрать все генераторы
+            if component.proxy(gen).insert() then -- попробовать заправиться
+              break
+            end
+          end
         end
       --[[elseif solar and geolyzer.isSunVisible() then -- проверить видимость солнца
         while not geolyzer.canSeeSky() do -- пока не видно неба
