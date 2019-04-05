@@ -56,7 +56,7 @@ report = function(message, stop) -- рапорт о состоянии
   elseif tunnel then -- если есть связанная карта
     tunnel.send(message) -- послать сообщение через нее
   end
-  computer.beep('...........') -- пикнуть
+  computer.beep() -- пикнуть
   if stop then -- если есть флаг завершения
     if chunkloader then
       chunkloader.setActive(false)
