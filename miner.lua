@@ -40,7 +40,11 @@ local tunnel = add_component('tunnel')
 local modem = add_component('modem')
 local robot = add_component('robot')
 local inventory = robot.inventorySize()
-local sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main
+local energy_level, sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main, solar
+
+energy_level = function()
+  return computer.energy()/computer.maxEnergy()
+end
 
 sleep = function(timeout)
   local deadline = computer.uptime()+timeout
@@ -50,7 +54,7 @@ sleep = function(timeout)
 end
 
 report = function(message, stop) -- рапорт о состоянии
-  message = '|'..X..' '..Y..' '..Z..'|\n'..message -- добавить к сообщению координаты
+  message = '|'..X..' '..Y..' '..Z..'|\n'..message..'\nenergy level: '..math.floor(energy_level()*100)..'%' -- добавить к сообщению координаты и уровень энергии
   if modem then -- если есть модем
     modem.broadcast(port, message) -- послать сообщение через модем
   elseif tunnel then -- если есть связанная карта
@@ -84,8 +88,10 @@ check = function(forcibly) -- проверка инструмента, бата�
       home(true) -- отправиться домой
     end
     go(cx, cy, cz) -- вернуться на место
-    if computer.energy()/computer.maxEnergy() < 0.5 then -- если энергии меньше 50%
+    if energy_level() < 0.3 then -- если энергии меньше 30%
+      local time = os.date('*t')
       if generator and generator.count() == 0 and not forcibly then -- если есть генератор
+        report('refueling solid fuel generators')
         for slot = 1, inventory do -- обойти инвентарь
           robot.select(slot) -- выбрать слот
           for gen in component.list('generator') do -- перебрать все генераторы
@@ -94,11 +100,22 @@ check = function(forcibly) -- проверка инструмента, бата�
             end
           end
         end
-      --[[elseif solar and geolyzer.isSunVisible() then -- проверить видимость солнца
+      elseif solar and geolyzer.isSunVisible() and -- проверить видимость солнца
+        (time.hour > 4 and time.hour < 17) then -- проверить время
         while not geolyzer.canSeeSky() do -- пока не видно неба
-          step(1) -- сделать шаг вверх
+          step(1, true) -- сделать шаг вверх без проверки
         end
-        sleep(60)]]
+        report('recharging in the sun')
+        sorter(true)
+        while (energy_level() < 0.98) and geolyzer.isSunVisible() do
+          time = os.date('*t') -- время работы солнечной панели 05:30 - 18:30
+          if time.hour >= 5 and time.hour < 19 then
+            sleep(60)
+          else
+            break
+          end
+        end
+        report('return to work')
       end
     end
   end
@@ -120,7 +137,7 @@ check = function(forcibly) -- проверка инструмента, бата�
   end
 end
 
-step = function(side) -- функция движения на 1 блок
+step = function(side, ignore) -- функция движения на 1 блок
   if not robot.swing(side) and robot.detect(side) then -- если блок нельзя разрушить
     home(true) -- запустить завершающую функцию
     report('insurmountable obstacle', true) -- послать сообщение
@@ -145,7 +162,9 @@ step = function(side) -- функция движения на 1 блок
       end
     end
   end
-  check()
+  if not ignore then
+    check()
+  end
 end
 
 turn = function(side) -- поворот в сторону
@@ -221,6 +240,13 @@ calibration = function() -- калибровка при запуске
     report('bottom solid block is not detected', true)
   elseif not robot.durability() then
     report('there is no suitable tool in the manipulator', true)
+  end
+  local clist = computer.getDeviceInfo()
+  for i, j in pairs(clist) do
+    if j.description == 'Solar panel' then
+      solar = true
+      break
+    end
   end
   if chunkloader then -- если есть чанклоадер
     chunkloader.setActive(true) -- включить
@@ -519,8 +545,8 @@ home = function(forcibly) -- переход к начальной точке и 
   if enderchest and not forcibly then
     robot.swing(3) -- забрать сундук
   else
-    while computer.energy()/computer.maxEnergy() < 0.98 do -- ждать полного заряда батареи
-      report('charging: '..math.floor((computer.energy()/computer.maxEnergy())*100)..'%')
+    while energy_level() < 0.98 do -- ждать полного заряда батареи
+      report('charging')
       sleep(30)
     end
   end
