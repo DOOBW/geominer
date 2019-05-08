@@ -44,10 +44,12 @@ Program for a robot that allows you to mine ore without going down into the cave
 
 * Generator Upgrade
 
+* Solar Generator Upgrade
+
 * Enderchest from EnderStorage mod
 
 
-<h3>Installing:</h3>
+<h2>Installing:</h2>
 
 * Download and save the file as init.lua
 
