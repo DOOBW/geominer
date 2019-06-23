@@ -81,13 +81,13 @@ check = function(forcibly) -- проверка инструмента, бата�
     local cx, cy, cz = X, Y, Z -- сохранить текущие координаты
     if robot.durability()/W_R < delta then -- если инструмент изношен
       report('tool is worn')
-      home(true) -- отправиться домой
       ignore_check = true
+      home(true) -- отправиться домой
     end
     if delta*E_C > computer.energy() then -- проверка уровня энергии
       report('battery is low')
-      home(true) -- отправиться домой
       ignore_check = true
+      home(true) -- отправиться домой
     end
     go(cx, cy, cz) -- вернуться на место
     if energy_level() < 0.3 then -- если энергии меньше 30%
