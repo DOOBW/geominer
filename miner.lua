@@ -40,7 +40,7 @@ local tunnel = add_component('tunnel')
 local modem = add_component('modem')
 local robot = add_component('robot')
 local inventory = robot.inventorySize()
-local energy_level, sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main, solar
+local energy_level, sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main, solar, ignore_check
 
 energy_level = function()
   return computer.energy()/computer.maxEnergy()
@@ -76,16 +76,18 @@ remove_point = function(point) -- удаление меток
 end
 
 check = function(forcibly) -- проверка инструмента, батареи, удаление меток
-  if steps%32 == 0 or forcibly then -- если пройдено 32 шага или включен принудительный режим
+  if not ignore_check and (steps%32 == 0 or forcibly) then -- если пройдено 32 шага или включен принудительный режим
     local delta = math.abs(X)+math.abs(Y)+math.abs(Z)+64 -- определить расстояние
     local cx, cy, cz = X, Y, Z -- сохранить текущие координаты
     if robot.durability()/W_R < delta then -- если инструмент изношен
       report('tool is worn')
       home(true) -- отправиться домой
+      ignore_check = true
     end
     if delta*E_C > computer.energy() then -- проверка уровня энергии
       report('battery is low')
       home(true) -- отправиться домой
+      ignore_check = true
     end
     go(cx, cy, cz) -- вернуться на место
     if energy_level() < 0.3 then -- если энергии меньше 30%
@@ -550,6 +552,7 @@ home = function(forcibly) -- переход к начальной точке и 
       sleep(30)
     end
   end
+  ignore_check = nil
   report('return to work')
 end
 
