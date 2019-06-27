@@ -140,7 +140,8 @@ check = function(forcibly) -- проверка инструмента, бата�
 end
 
 step = function(side, ignore) -- функция движения на 1 блок
-  if not robot.swing(side) and robot.detect(side) then -- если блок нельзя разрушить
+  local result, obstacle = robot.swing(side) 
+  if not result and obstacle ~= 'air' and robot.detect(side) then -- если блок нельзя разрушить
     home(true) -- запустить завершающую функцию
     report('insurmountable obstacle', true) -- послать сообщение
   else
@@ -402,9 +403,19 @@ sorter = function(pack) -- сортировка лута
     end
   end
   while robot.suck(1) do end --- забрать предметы из буфера
+  local items = 0
+  for slot = 1, inventory do
+    if robot.count(slot) > 0 then
+      items = items + 1
+    end
+  end
+  if inventory-items < 5 or items/inventory > 0.9 then
+    home()
+  end
 end
 
 home = function(forcibly) -- переход к начальной точке и сброс лута
+  local x, y, z
   report('ore unloading')
   local enderchest -- обнулить слот с эндерсундуком
   for slot = 1, inventory do -- просканировать инвентарь
@@ -417,11 +428,12 @@ home = function(forcibly) -- переход к начальной точке и 
     end
   end
   if enderchest and not forcibly then -- если есть сундук и нет принудительного возвращения домой
-    step(1) -- подняться на 1 блок
+    -- step(1) -- подняться на 1 блок
     robot.swing(3) -- освободить место для сундука
     robot.select(enderchest) -- выбрать сундук
     robot.place(3) -- поставить сундук
   else
+    x, y, z = X, Y, Z
     go(0, -2, 0)
     go(0, 0, 0)
   end
@@ -554,6 +566,8 @@ home = function(forcibly) -- переход к начальной точке и 
   end
   ignore_check = nil
   report('return to work')
+  go(0, -2, 0)
+  go(x, y, z)
 end
 
 main = function()
