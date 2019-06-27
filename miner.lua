@@ -18,7 +18,7 @@ local quads = {{-7, -7}, {-7, 1}, {1, -7}, {1, 1}}
 local workbench = {1,2,3,5,6,7,9,10,11}
 local wlist = {'enderstorage:ender_storage'}
 local fragments = {'redstone','coal','dye','diamond','emerald'}
-local tails = {'cobblestone','dirt','gravel','sand','stained_hardened_clay','sandstone','stone','grass','end_stone','hardened_clay','mossy_cobblestone','planks','fence','torch','nether_brick','nether_brick_fence','nether_brick_stairs','netherrack','soul_sand'}
+local tails = {'cobblestone','granite','diorite','andesite','marble','limestone','dirt','gravel','sand','stained_hardened_clay','sandstone','stone','grass','end_stone','hardened_clay','mossy_cobblestone','planks','fence','torch','nether_brick','nether_brick_fence','nether_brick_stairs','netherrack','soul_sand'}
 arr2a_arr(wlist)
 arr2a_arr(fragments)
 arr2a_arr(tails)
