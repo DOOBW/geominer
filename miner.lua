@@ -622,6 +622,7 @@ for o = 1, 10 do -- цикл ограничения спирали
         home(true) -- возврат домой
         report(computer.uptime()-Tau..' seconds\npath length: '..steps..'\nmade turns: '..turns, true) -- сообщить о завершении работы
       else -- иначе
+        WORLD = {x = {}, y = {}, z = {}} 
         go(pos[1]*16, -2, pos[2]*16) -- перейти к следующему чанку
         go(X, 0, Z) -- перейти в стартовую точку сканирования
       end
