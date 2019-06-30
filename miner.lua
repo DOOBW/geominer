@@ -414,7 +414,7 @@ sorter = function(pack) -- сортировка лута
   end
 end
 
-home = function(forcibly) -- переход к начальной точке и сброс лута
+home = function(forcibly, interrupt) -- переход к начальной точке и сброс лута
   local x, y, z
   report('ore unloading')
   local enderchest -- обнулить слот с эндерсундуком
@@ -565,9 +565,11 @@ home = function(forcibly) -- переход к начальной точке и 
     end
   end
   ignore_check = nil
-  report('return to work')
-  go(0, -2, 0)
-  go(x, y, z)
+  if not interrupt then
+    report('return to work')
+    go(0, -2, 0)
+    go(x, y, z)
+  end
 end
 
 main = function()
@@ -619,7 +621,7 @@ for o = 1, 10 do -- цикл ограничения спирали
       report('chunk #'..pos[3]+1 ..' processed') -- сообщить о завершении работы в чанке
       pos[i], pos[3] = pos[i] + pos[0], pos[3] + 1 -- обновить координаты
       if pos[3] == chunks then -- если достигнут последний чанк
-        home(true) -- возврат домой
+        home(true, true) -- возврат домой
         report(computer.uptime()-Tau..' seconds\npath length: '..steps..'\nmade turns: '..turns, true) -- сообщить о завершении работы
       else -- иначе
         WORLD = {x = {}, y = {}, z = {}} 
