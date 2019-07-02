@@ -349,6 +349,16 @@ sorter = function(pack) -- сортировка лута
     for o, m in pairs(available) do
       if m > 8 then
         for l = 1, math.ceil(m/576) do
+          local items = 0
+          for slot = 1, inventory do
+            if robot.count(slot) > 0 then
+              items = items + 1
+            end
+          end
+          if inventory-items < 10 or items/inventory > 0.9 then
+            while robot.suck(1) do end
+            home()
+          end
           -- очистка рабочей зоны --
           for i = 1, 9 do -- пройти по слотам верстака
             if robot.count(workbench[i]) > 0 then -- если слот не пуст
