@@ -357,7 +357,7 @@ sorter = function(pack) -- сортировка лута
           end
           if inventory-items < 10 or items/inventory > 0.9 then
             while robot.suck(1) do end
-            home()
+            home(true)
           end
           -- очистка рабочей зоны --
           for i = 1, 9 do -- пройти по слотам верстака
