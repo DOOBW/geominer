@@ -40,7 +40,7 @@ local tunnel = add_component('tunnel')
 local modem = add_component('modem')
 local robot = add_component('robot')
 local inventory = robot.inventorySize()
-local energy_level, sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main, solar, ignore_check
+local energy_level, sleep, report, remove_point, check, step, turn, smart_turn, go, scan, calibration, sorter, home, main, solar, ignore_check, inv_check
 
 energy_level = function()
   return computer.energy()/computer.maxEnergy()
@@ -77,8 +77,8 @@ end
 
 check = function(forcibly) -- проверка инструмента, батареи, удаление меток
   if not ignore_check and (steps%32 == 0 or forcibly) then -- если пройдено 32 шага или включен принудительный режим
+    inv_check()
     local delta = math.abs(X)+math.abs(Y)+math.abs(Z)+64 -- определить расстояние
-    local cx, cy, cz = X, Y, Z -- сохранить текущие координаты
     if robot.durability()/W_R < delta then -- если инструмент изношен
       report('tool is worn')
       ignore_check = true
@@ -89,7 +89,6 @@ check = function(forcibly) -- проверка инструмента, бата�
       ignore_check = true
       home(true) -- отправиться домой
     end
-    go(cx, cy, cz) -- вернуться на место
     if energy_level() < 0.3 then -- если энергии меньше 30%
       local time = os.date('*t')
       if generator and generator.count() == 0 and not forcibly then -- если есть генератор
@@ -298,6 +297,19 @@ calibration = function() -- калибровка при запуске
   end
 end
 
+inv_check = function() -- инвентаризация
+  local items = 0
+  for slot = 1, inventory do
+    if robot.count(slot) > 0 then
+      items = items + 1
+    end
+  end
+  if inventory-items < 10 or items/inventory > 0.9 then
+    while robot.suck(1) do end
+    home(true)
+  end
+end
+
 sorter = function(pack) -- сортировка лута
   robot.swing(0) -- освободить место для мусора
   robot.swing(1) -- освободить место для буфера
@@ -349,16 +361,7 @@ sorter = function(pack) -- сортировка лута
     for o, m in pairs(available) do
       if m > 8 then
         for l = 1, math.ceil(m/576) do
-          local items = 0
-          for slot = 1, inventory do
-            if robot.count(slot) > 0 then
-              items = items + 1
-            end
-          end
-          if inventory-items < 10 or items/inventory > 0.9 then
-            while robot.suck(1) do end
-            home(true)
-          end
+          inv_check()
           -- очистка рабочей зоны --
           for i = 1, 9 do -- пройти по слотам верстака
             if robot.count(workbench[i]) > 0 then -- если слот не пуст
@@ -413,15 +416,7 @@ sorter = function(pack) -- сортировка лута
     end
   end
   while robot.suck(1) do end --- забрать предметы из буфера
-  local items = 0
-  for slot = 1, inventory do
-    if robot.count(slot) > 0 then
-      items = items + 1
-    end
-  end
-  if inventory-items < 5 or items/inventory > 0.9 then
-    home()
-  end
+  inv_check()
 end
 
 home = function(forcibly, interrupt) -- переход к начальной точке и сброс лута
