@@ -298,6 +298,9 @@ calibration = function() -- калибровка при запуске
 end
 
 inv_check = function() -- инвентаризация
+  if ignore_check then
+    return
+  end
   local items = 0
   for slot = 1, inventory do
     if robot.count(slot) > 0 then
@@ -420,8 +423,9 @@ sorter = function(pack) -- сортировка лута
 end
 
 home = function(forcibly, interrupt) -- переход к начальной точке и сброс лута
-  local x, y, z
+  local x, y, z, d
   report('ore unloading')
+  ignore_check = true
   local enderchest -- обнулить слот с эндерсундуком
   for slot = 1, inventory do -- просканировать инвентарь
     local item = controller.getStackInInternalSlot(slot) -- получить информацию о слоте
@@ -438,7 +442,7 @@ home = function(forcibly, interrupt) -- переход к начальной т�
     robot.select(enderchest) -- выбрать сундук
     robot.place(3) -- поставить сундук
   else
-    x, y, z = X, Y, Z
+    x, y, z, d = X, Y, Z, D
     go(0, -2, 0)
     go(0, 0, 0)
   end
@@ -574,6 +578,7 @@ home = function(forcibly, interrupt) -- переход к начальной т�
     report('return to work')
     go(0, -2, 0)
     go(x, y, z)
+    smart_turn(d)
   end
 end
 
